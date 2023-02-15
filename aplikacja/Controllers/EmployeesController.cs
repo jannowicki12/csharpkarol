@@ -48,7 +48,9 @@ namespace aplikacja.Controllers
             return RedirectToAction("Add");
         }
 
+
         [HttpGet]
+
         public async Task<IActionResult> View(Guid id)
         {
             var employee = await crudDbContext.Employees.FirstOrDefaultAsync(x => x.Id == id);
@@ -64,7 +66,39 @@ namespace aplikacja.Controllers
                     Position = employee.Position,
                     BirthDate = employee.BirthDate,
                 };
-                return View(viewModel);
+                return await Task.Run(() => View("View", viewModel));
+            }
+            return RedirectToAction("Index");
+        }
+        [HttpPost]
+        public async Task<IActionResult> View(UpdateEmployeeViewModel model)
+        {
+            var employee = await crudDbContext.Employees.FindAsync(model.Id);
+
+            if (employee != null)
+            {
+                employee.Name = model.Name;
+                employee.Email = model.Email;
+                employee.Salary = model.Salary;
+                employee.BirthDate = model.BirthDate;
+                employee.Position = model.Position;
+
+                await crudDbContext.SaveChangesAsync();
+                return RedirectToAction("Index");
+            };
+            return RedirectToAction("Index");
+        }
+        [HttpPost]
+        public async Task<IActionResult> Delete(UpdateEmployeeViewModel model)
+        {
+            var employee = await crudDbContext.Employees.FindAsync(model.Id);
+
+            if (employee != null)
+            {
+                crudDbContext.Employees.Remove(employee);
+                await crudDbContext.SaveChangesAsync();
+
+                return RedirectToAction("Index");
             }
             return RedirectToAction("Index");
         }
